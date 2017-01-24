@@ -248,6 +248,17 @@ class LiveboxPlayTv(object):
     def channel_down(self):
         return self.press_key(key=KEYS['CH-'])
 
+    def play_pause(self):
+        return self.press_key(key=KEYS['PLAY/PAUSE'])
+
+    def play(self):
+        if self.info.media_state == 'PAUSE':
+            self.play_pause()
+
+    def pause(self):
+        if self.info.get('timeShiftingState', None) == 'LIVE':
+            self.play_pause()
+
     def event_notify(self):
         # https://www.domotique-fibaro.fr/topic/4444-tv-commande-decodeur-livebox-play-et-gestion-d%C3%A3%C2%A9tat-temps-r%C3%A3%C2%A9el/
         url = 'http://{}:{}/remoteControl/notifyEvent'.format(self.hostname, self.port)
