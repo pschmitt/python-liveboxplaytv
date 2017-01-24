@@ -141,7 +141,7 @@ class LiveboxPlayTv(object):
             return self.press_key(key=KEYS['POWER'])
 
     def get_current_channel(self):
-        epg_id = self.info['playedMediaId']
+        epg_id = self.info.get('playedMediaId', None)
         return self.get_channel_from_epg_id(epg_id)
 
     def get_current_channel_name(self):
@@ -185,6 +185,8 @@ class LiveboxPlayTv(object):
         return c['epgId']
 
     def get_channel_from_epg_id(self, epg_id):
+        if epg_id is None:
+            return {'name': 'N/A'}
         if epg_id == '0':
             return {'name': 'Mosaique'}
         return [x for x in self.get_channels() if x['epgId'] == epg_id][0]
