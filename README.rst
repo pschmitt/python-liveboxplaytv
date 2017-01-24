@@ -50,6 +50,7 @@ This library is intended for controlling an Orange Livebox Play TV appliance
 There also is a CLI script that ships with this package:
 
 .. code-block::
+
     $ liveboxplaytv -h
     usage: liveboxplaytv [-h] -H HOSTNAME [-j] [-d]
                          {key,vol,info,state,on,off,channel,notify,op} ...
