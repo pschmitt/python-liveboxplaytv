@@ -9,7 +9,7 @@ import requests
 import time
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -53,10 +53,15 @@ class LiveboxPlayTv(object):
         self.hostname = hostname
         self.port = port
         self.CHANNELS = None
+        self.CHANNEL_IMG = {}
 
     @property
     def channel(self):
         return self.get_current_channel_name()
+
+    @property
+    def channel_img(self):
+        return self.get_channel_image()
 
     @channel.setter
     def channel(self, value):
@@ -145,13 +150,63 @@ class LiveboxPlayTv(object):
         return self.get_channel_from_epg_id(epg_id)
 
     def get_current_channel_name(self):
-        try:
-            return self.get_current_channel()['name']
-        except KeyError:
+        channel = self.get_current_channel()['name']
+        if channel == 'N/A':
+            # Unable to determine current channel, let's try something else to
+            # get a string representing what's on screen
             # http://forum.eedomus.com/viewtopic.php?f=50&t=2914&start=40#p36721
-            info = self.info
-            if info['osdContext'] == 'VOD':
+            osd = self.osd_context  # Avoid multiple lookups
+            if osd == 'VOD':
                 return 'VOD'
+            elif osd == 'AdvPlayer':
+                return 'Replay'
+        return channel
+
+    def get_current_channel_image(self, img_size=400):
+        channel = self.channel
+        if self.channel == 'N/A':
+            return
+        return self.get_channel_image(channel=channel, img_size=img_size)
+
+    def get_channel_image(self, channel, img_size=400):
+        """Get the logo for a channel"""
+        from bs4 import BeautifulSoup
+        import re
+        import wikipedia
+        from wikipedia.exceptions import PageError
+        wikipedia.set_lang('fr')
+
+        # Check if the image is in cache
+        if channel in self.CHANNEL_IMG:
+            img = self.CHANNEL_IMG[channel]
+            logger.debug('Cache hit: {} -> {}'.format(channel, img))
+            return img
+
+        # Handle query exceptions
+        if channel == 'LCP/PS':
+            query = 'LCP (chaine de television)'
+        elif channel == 'i>Télé':
+                query = 'I-Télé'
+        elif channel.startswith('France'):
+            # For France 2, France 3 etc. use the channel name directly
+            query = channel
+        else:
+            # Default query
+            query = '{} (chaine de television)'.format(channel)
+        try:
+            p = wikipedia.page(query)
+            s = BeautifulSoup(p.html(), 'html.parser')
+            images = s.find_all('img')
+            img_src = None
+            for i in images:
+                if i['alt'].startswith('Image illustrative'):
+                    img_src = re.sub('\d+px', '{}px'.format(img_size), i['src'])
+            img = 'https:{}'.format(img_src) if img_src else None
+            # Cache result
+            self.CHANNEL_IMG[channel] = img
+            return img
+        except PageError:
+            logger.error('Could not fetch channel image for {}'.format(channel))
 
     def get_channels(self):
         # Return cached results if available
