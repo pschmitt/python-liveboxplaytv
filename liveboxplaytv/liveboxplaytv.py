@@ -196,7 +196,7 @@ class LiveboxPlayTv(object):
         logger.debug('Query: {}'.format(query))
         try:
             p = wikipedia.page(query)
-            logger.debug(p.)
+            logger.debug('Wikipedia article title: {}'.format(p.title))
             s = BeautifulSoup(p.html(), 'html.parser')
             images = s.find_all('img')
             img_src = None
