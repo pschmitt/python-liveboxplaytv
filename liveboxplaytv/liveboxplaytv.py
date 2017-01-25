@@ -187,14 +187,16 @@ class LiveboxPlayTv(object):
             query = 'LCP (chaine de television)'
         elif channel == 'i>Télé':
                 query = 'I-Télé'
-        elif channel.startswith('France'):
+        elif channel.startswith('France') or channel == 'M6' or channel == 'W9':
             # For France 2, France 3 etc. use the channel name directly
             query = channel
         else:
             # Default query
             query = '{} (chaine de television)'.format(channel)
+        logger.debug('Query: {}'.format(query))
         try:
             p = wikipedia.page(query)
+            logger.debug(p.)
             s = BeautifulSoup(p.html(), 'html.parser')
             images = s.find_all('img')
             img_src = None

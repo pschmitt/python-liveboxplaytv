@@ -1,1 +1,1 @@
-workon liveboxplaytv
+workon python-liveboxplaytv
