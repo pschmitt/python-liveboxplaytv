@@ -214,7 +214,7 @@ class LiveboxPlayTv(object):
         # Return cached results if available
         if self.CHANNELS:
             return self.CHANNELS
-        url = 'http://lsm-rendezvous040413.orange.fr/API/?api_token=be906750a3cd20d6ddb47ec0b50e7a68&output=json&withChannels=1'
+        url = 'http://lsm-rendezvous040413.orange.fr/API/?output=json&withChannels=1'
         r = requests.get(url)
         r.raise_for_status()
         self.CHANNELS = r.json()['channels']['channel']
