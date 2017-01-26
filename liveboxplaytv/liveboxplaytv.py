@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class LiveboxPlayTv(object):
-    def __init__(self, hostname, port=8080, refresh_frequency=30):
+    def __init__(self, hostname, port=8080, refresh_frequency=60):
         from datetime import timedelta
         self.hostname = hostname
         self.port = port
