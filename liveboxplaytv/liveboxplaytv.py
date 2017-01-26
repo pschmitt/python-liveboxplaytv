@@ -2,6 +2,8 @@
 # coding: utf-8
 
 
+from .channels import CHANNELS
+from .keys import KEYS
 from fuzzywuzzy import process
 import json
 import logging
@@ -11,38 +13,6 @@ import time
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-
-KEYS = {
-    'POWER': 116,
-    '0': 512,
-    '1': 513,
-    '2': 514,
-    '3': 515,
-    '4': 516,
-    '5': 517,
-    '6': 518,
-    '7': 519,
-    '8': 520,
-    '9': 521,
-    'CH+': 402,
-    'CH-': 403,
-    'VOL+': 115,
-    'VOL-': 114,
-    'MUTE': 113,
-    'UP': 103,
-    'DOWN': 108,
-    'LEFT': 105,
-    'RIGHT': 106,
-    'OK': 352,
-    'BACK': 158,
-    'MENU': 139,
-    'PLAY/PAUSE': 164,
-    'FBWD': 168,
-    'FFWD': 159,
-    'REC': 167,
-    'VOD': 393,
-}
 
 
 CHANNEL_EPG_IDS = {'Mosaique': '0'}
@@ -162,13 +132,13 @@ class LiveboxPlayTv(object):
                 return 'Replay'
         return channel
 
-    def get_current_channel_image(self, img_size=400):
+    def get_current_channel_image(self, img_size=300):
         channel = self.channel
         if self.channel == 'N/A':
             return
         return self.get_channel_image(channel=channel, img_size=img_size)
 
-    def get_channel_image(self, channel, img_size=400):
+    def get_channel_image(self, channel, img_size=300, skip_cache=False):
         """Get the logo for a channel"""
         from bs4 import BeautifulSoup
         import re
@@ -176,24 +146,30 @@ class LiveboxPlayTv(object):
         from wikipedia.exceptions import PageError
         wikipedia.set_lang('fr')
 
+        if channel is None:
+            logger.error('Channel is not set. Could not retrieve image.')
+            return
+
         # Check if the image is in cache
-        if channel in self.CHANNEL_IMG:
+        if channel in self.CHANNEL_IMG and not skip_cache:
             img = self.CHANNEL_IMG[channel]
             logger.debug('Cache hit: {} -> {}'.format(channel, img))
             return img
 
-        # Handle query exceptions
-        if channel == 'LCP/PS':
-            query = 'LCP (chaine de television)'
-        elif channel == 'i>Télé':
-                query = 'I-Télé'
-        elif channel.startswith('France') or channel == 'M6' or channel == 'W9':
-            # For France 2, France 3 etc. use the channel name directly
-            query = channel
-        else:
-            # Default query
-            query = '{} (chaine de television)'.format(channel)
+        channel_info = self.get_channel_info(channel)
+        query = channel_info['wiki_page']
+        if not query:
+            logger.debug('Wiki page is not set for channel {}'.format(channel))
+            return
         logger.debug('Query: {}'.format(query))
+        # If there is a max image size defined use it.
+        if 'max_img_size' in channel_info:
+            if img_size > channel_info['max_img_size']:
+                logger.info(
+                    'Requested image size is bigger than the max, '
+                    'setting it to {}'.format(channel_info['max_img_size'])
+                )
+                img_size = channel_info['max_img_size']
         try:
             p = wikipedia.page(query)
             logger.debug('Wikipedia article title: {}'.format(p.title))
@@ -210,7 +186,7 @@ class LiveboxPlayTv(object):
         except PageError:
             logger.error('Could not fetch channel image for {}'.format(channel))
 
-    def get_channels(self):
+    def update_channels(self):
         # Return cached results if available
         if self.CHANNELS:
             return self.CHANNELS
@@ -221,32 +197,32 @@ class LiveboxPlayTv(object):
         return self.CHANNELS
 
     def get_channel_names(self, json_output=False):
-        channels = [x['name'] for x in self.get_channels()]
+        channels = [x['name'] for x in CHANNELS]
         return json.dumps(channels) if json_output else channels
 
-    def get_channel_epg_id(self, channel):
+    def get_channel_info(self, channel):
         # If the channel start with '#' search by channel number
         channel_index = None
         if channel.startswith('#'):
             channel_index = channel.split('#')[1]
         # Look for an exact match first
-        for c in self.get_channels():
+        for c in CHANNELS:
             if channel_index:
-                if c['tvIndex'] == channel_index:
-                    return c['epgId']
+                if c['index'] == channel_index:
+                    return c
             else:
                 if c['name'].lower() == channel.lower():
-                    return c['epgId']
+                    return c
         # Try fuzzy matching it that did not give any result
-        c = process.extractOne(channel, self.get_channels())[0]
-        return c['epgId']
+        c = process.extractOne(channel, CHANNELS)[0]
+        return c
+
+    def get_channel_epg_id(self, channel):
+        return self.get_channel_info(channel)['epg_id']
 
     def get_channel_from_epg_id(self, epg_id):
-        if epg_id is None:
-            return {'name': 'N/A'}
-        if epg_id == '0':
-            return {'name': 'Mosaique'}
-        return [x for x in self.get_channels() if x['epgId'] == epg_id][0]
+        res = [c for c in CHANNELS if c['epg_id'] == epg_id]
+        return res[0] if len(res) > 0 else None
 
     def set_epg_id(self, epg_id):
         # The EPG ID needs to be 10 chars long, padded with '*' chars
@@ -266,10 +242,7 @@ class LiveboxPlayTv(object):
         return r.json()
 
     def set_channel(self, channel):
-        if channel in CHANNEL_EPG_IDS:
-            epg_id = CHANNEL_EPG_IDS[channel]
-        else:
-            epg_id = self.get_channel_epg_id(channel)
+        epg_id = self.get_channel_epg_id(channel)
         return self.set_epg_id(epg_id)
 
     def __get_key_name(self, key_id):
