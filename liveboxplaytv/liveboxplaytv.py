@@ -11,18 +11,14 @@ import requests
 import time
 
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-
-CHANNEL_EPG_IDS = {'Mosaique': '0'}
 
 
 class LiveboxPlayTv(object):
     def __init__(self, hostname, port=8080):
         self.hostname = hostname
         self.port = port
-        self.CHANNELS = None
+        self.CHANNELS_ORANGE_API = None
         self.CHANNEL_IMG = {}
 
     @property
@@ -186,15 +182,17 @@ class LiveboxPlayTv(object):
         except PageError:
             logger.error('Could not fetch channel image for {}'.format(channel))
 
-    def update_channels(self):
+    def get_channels(self):
+        return CHANNELS
+
+    def get_channels_from_orange(self):
         # Return cached results if available
-        if self.CHANNELS:
-            return self.CHANNELS
-        url = 'http://lsm-rendezvous040413.orange.fr/API/?output=json&withChannels=1'
-        r = requests.get(url)
-        r.raise_for_status()
-        self.CHANNELS = r.json()['channels']['channel']
-        return self.CHANNELS
+        if not self.CHANNELS_ORANGE_API:
+            url = 'http://lsm-rendezvous040413.orange.fr/API/?output=json&withChannels=1'
+            r = requests.get(url)
+            r.raise_for_status()
+            self.CHANNELS_ORANGE_API = r.json()['channels']['channel']
+        return self.CHANNELS_ORANGE_API
 
     def get_channel_names(self, json_output=False):
         channels = [x['name'] for x in CHANNELS]
