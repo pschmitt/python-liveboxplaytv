@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 class LiveboxPlayTv(object):
-    def __init__(self, hostname, port=8080):
+    def __init__(self, hostname, port=8080, refresh_frequency=30):
+        from datetime import timedelta
         self.hostname = hostname
         self.port = port
-        self.CHANNELS_ORANGE_API = None
-        self.CHANNEL_IMG = {}
+        self._CACHE_ORANGE_API = (None, None)
+        self._CACHE_CHANNEL_IMG = {}
+        self.refresh_frequency = timedelta(seconds=refresh_frequency)
 
     @property
     def channel(self):
@@ -40,6 +42,10 @@ class LiveboxPlayTv(object):
     @epg_id.setter
     def epg_id(self, value):
         self.set_epg_id(value)
+
+    @property
+    def program(self):
+        return self.get_current_program_name()
 
     @property
     def osd_context(self):
@@ -111,6 +117,21 @@ class LiveboxPlayTv(object):
         if self.state():
             return self.press_key(key=KEYS['POWER'])
 
+    def get_program_for_epg_id(self, epg_id):
+        res = [p for p in self.get_programs() if p['channelId'] == epg_id]
+        return res[0] if len(res) > 0 else None
+
+    def get_program_info(self, channel):
+        epg_id = self.get_channel_epg_id(channel)
+        return self.get_program_for_epg_id(epg_id)
+
+    def get_current_program(self):
+        return self.get_program_for_epg_id(self.epg_id)
+
+    def get_current_program_name(self):
+        res = self.get_current_program()
+        return res['title'] if res else None
+
     def get_current_channel(self):
         epg_id = self.info.get('playedMediaId', None)
         return self.get_channel_from_epg_id(epg_id)
@@ -147,8 +168,8 @@ class LiveboxPlayTv(object):
             return
 
         # Check if the image is in cache
-        if channel in self.CHANNEL_IMG and not skip_cache:
-            img = self.CHANNEL_IMG[channel]
+        if channel in self._CACHE_CHANNEL_IMG and not skip_cache:
+            img = self._CACHE_CHANNEL_IMG[channel]
             logger.debug('Cache hit: {} -> {}'.format(channel, img))
             return img
 
@@ -177,7 +198,7 @@ class LiveboxPlayTv(object):
                     img_src = re.sub('\d+px', '{}px'.format(img_size), i['src'])
             img = 'https:{}'.format(img_src) if img_src else None
             # Cache result
-            self.CHANNEL_IMG[channel] = img
+            self._CACHE_CHANNEL_IMG[channel] = img
             return img
         except PageError:
             logger.error('Could not fetch channel image for {}'.format(channel))
@@ -185,14 +206,35 @@ class LiveboxPlayTv(object):
     def get_channels(self):
         return CHANNELS
 
-    def get_channels_from_orange(self):
+    def __update(self):
+        logger.info('Refresh Orange API data')
+        url = 'http://lsm-rendezvous040413.orange.fr/API/?output=json&withChannels=1'
+        r = requests.get(url)
+        r.raise_for_status()
+        return r.json()
+
+    def query_orange_api(self, force=False):
         # Return cached results if available
-        if not self.CHANNELS_ORANGE_API:
-            url = 'http://lsm-rendezvous040413.orange.fr/API/?output=json&withChannels=1'
-            r = requests.get(url)
-            r.raise_for_status()
-            self.CHANNELS_ORANGE_API = r.json()['channels']['channel']
-        return self.CHANNELS_ORANGE_API
+        from datetime import datetime
+        now = datetime.now()
+        last_updated = None
+        if len(self._CACHE_ORANGE_API) > 0:
+            last_updated = self._CACHE_ORANGE_API[0]
+        if last_updated:
+            if force or last_updated < (now - self.refresh_frequency):
+                # Time to refresh the data
+                self._CACHE_ORANGE_API = (now, self.__update())
+        elif force or not last_updated:
+                # First update
+                self._CACHE_ORANGE_API = (now, self.__update())
+        if len(self._CACHE_ORANGE_API) > 1:
+            return self._CACHE_ORANGE_API[1]
+
+    def get_channels_from_orange(self):
+        return self.query_orange_api()['channels']['channel']
+
+    def get_programs(self):
+        return self.query_orange_api()['diffusions']['diffusion']
 
     def get_channel_names(self, json_output=False):
         channels = [x['name'] for x in CHANNELS]
