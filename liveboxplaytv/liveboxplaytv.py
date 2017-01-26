@@ -37,7 +37,7 @@ class LiveboxPlayTv(object):
 
     @property
     def epg_id(self):
-        return self.info['playedMediaId']
+        return self.info.get('playedMediaId', None)
 
     @epg_id.setter
     def epg_id(self, value):
@@ -49,35 +49,35 @@ class LiveboxPlayTv(object):
 
     @property
     def osd_context(self):
-        return self.info['osdContext']
+        return self.info.get('osdContext', None)
 
     @property
     def media_state(self):
-        return self.info['playedMediaState']
+        return self.info.get('playedMediaState', None)
 
     @property
     def media_position(self):
-        return self.info['playedMediaPosition']
+        return self.info('playedMediaPosition', None)
 
     @property
     def media_type(self):
-        return self.info['playedMediaType']
+        return self.info('playedMediaType', None)
 
     @property
     def timeshift_state(self):
-        return self.info['timeShiftingState']
+        return self.info('timeShiftingState', None)
 
     @property
     def mac_address(self):
-        return self.info['macAddress']
+        return self.info('macAddress', None)
 
     @property
     def name(self):
-        return self.info['friendlyName']
+        return self.info('friendlyName', None)
 
     @property
     def wol_support(self):
-        return self.info['wolSupport'] == '0'
+        return self.info('wolSupport', None) == '0'
 
     @property
     def is_on(self):
@@ -137,8 +137,11 @@ class LiveboxPlayTv(object):
         return self.get_channel_from_epg_id(epg_id)
 
     def get_current_channel_name(self):
-        channel = self.get_current_channel()['name']
-        if channel == 'N/A':
+        channel = self.get_current_channel()
+        if channel is None:
+            return
+        channel_name = channel['name']
+        if channel_name == 'N/A':
             # Unable to determine current channel, let's try something else to
             # get a string representing what's on screen
             # http://forum.eedomus.com/viewtopic.php?f=50&t=2914&start=40#p36721
@@ -147,7 +150,7 @@ class LiveboxPlayTv(object):
                 return 'VOD'
             elif osd == 'AdvPlayer':
                 return 'Replay'
-        return channel
+        return channel_name
 
     def get_current_channel_image(self, img_size=300):
         channel = self.channel
