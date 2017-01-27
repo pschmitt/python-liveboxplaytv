@@ -105,7 +105,7 @@ class LiveboxPlayTv(object):
         return self.rq(10)['result']['data']
 
     def state(self):
-        return self.info['activeStandbyState'] == '0'
+        return self.info.get('activeStandbyState', None) == '0'
 
     def turn_on(self):
         if not self.state():
