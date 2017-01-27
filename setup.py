@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='liveboxplaytv',
-    version='1.4.2',
+    version='1.4.3',
     license='GPL3',
     description='Python bindings for the Orange Livebox Play TV appliance',
     long_description=open('README.rst').read(),
