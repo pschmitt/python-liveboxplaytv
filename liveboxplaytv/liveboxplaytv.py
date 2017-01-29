@@ -24,6 +24,10 @@ class LiveboxPlayTv(object):
         self.refresh_frequency = timedelta(seconds=refresh_frequency)
 
     @property
+    def standby_state(self):
+        return self.info.get('activeStandbyState', None) == '0'
+
+    @property
     def channel(self):
         return self.get_current_channel_name()
 
@@ -57,31 +61,31 @@ class LiveboxPlayTv(object):
 
     @property
     def media_position(self):
-        return self.info('playedMediaPosition', None)
+        return self.info.get('playedMediaPosition', None)
 
     @property
     def media_type(self):
-        return self.info('playedMediaType', None)
+        return self.info.get('playedMediaType', None)
 
     @property
     def timeshift_state(self):
-        return self.info('timeShiftingState', None)
+        return self.info.get('timeShiftingState', None)
 
     @property
     def mac_address(self):
-        return self.info('macAddress', None)
+        return self.info.get('macAddress', None)
 
     @property
     def name(self):
-        return self.info('friendlyName', None)
+        return self.info.get('friendlyName', None)
 
     @property
     def wol_support(self):
-        return self.info('wolSupport', None) == '0'
+        return self.info.get('wolSupport', None) == '0'
 
     @property
     def is_on(self):
-        return self.state()
+        return self.standby_state
 
     @property
     def info(self):
@@ -105,16 +109,16 @@ class LiveboxPlayTv(object):
         return self.rq(10)['result']['data']
 
     def state(self):
-        return self.info.get('activeStandbyState', None) == '0'
+        return self.standby_state
 
     def turn_on(self):
-        if not self.state():
+        if not self.standby_state:
             self.press_key(key=KEYS['POWER'])
             time.sleep(.8)
             self.press_key(key=KEYS['OK'])
 
     def turn_off(self):
-        if self.state():
+        if self.standby_state:
             return self.press_key(key=KEYS['POWER'])
 
     def get_program_for_epg_id(self, epg_id):
