@@ -330,11 +330,13 @@ class LiveboxPlayTv(object):
 
     def play(self):
         if self.media_state == 'PAUSE':
-            self.play_pause()
+            return self.play_pause()
+        logger.debug('Media is already playing.')
 
     def pause(self):
-        if self.timeshift_state == 'LIVE':
-            self.play_pause()
+        if self.media_state == 'PLAY':
+            return self.play_pause()
+        logger.debug('Media is already paused.')
 
     def event_notify(self):
         # https://www.domotique-fibaro.fr/topic/4444-tv-commande-decodeur-livebox-play-et-gestion-d%C3%A3%C2%A9tat-temps-r%C3%A3%C2%A9el/
