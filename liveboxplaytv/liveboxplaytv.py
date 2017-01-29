@@ -325,11 +325,11 @@ class LiveboxPlayTv(object):
         return self.press_key(key=KEYS['PLAY/PAUSE'])
 
     def play(self):
-        if self.info.media_state == 'PAUSE':
+        if self.media_state == 'PAUSE':
             self.play_pause()
 
     def pause(self):
-        if self.info.get('timeShiftingState', None) == 'LIVE':
+        if self.timeshift_state == 'LIVE':
             self.play_pause()
 
     def event_notify(self):
