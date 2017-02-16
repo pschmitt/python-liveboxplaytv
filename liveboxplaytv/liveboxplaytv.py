@@ -15,9 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 class LiveboxPlayTv(object):
-    def __init__(self, hostname, port=8080):
+    def __init__(self, hostname, port=8080, timeout=3):
         self.hostname = hostname
         self.port = port
+        self.timeout = timeout
+        assert type(self.info) is dict, \
+            'Failed to retrive info from {}'.format(self.hostname)
         self.CHANNELS_ORANGE_API = None
         self.CHANNEL_IMG = {}
 
@@ -91,7 +94,7 @@ class LiveboxPlayTv(object):
         get_params = {'operation': operation}
         if params:
             get_params.update(params)
-        r = requests.get(url, params=get_params)
+        r = requests.get(url, params=get_params, timeout=self.timeout)
         r.raise_for_status()
         return r.json()
 
