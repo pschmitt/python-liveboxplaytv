@@ -15,10 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 class LiveboxPlayTv(object):
-    def __init__(self, hostname, port=8080, refresh_frequency=60):
+    def __init__(self, hostname, port=8080, timeout=3, refresh_frequency=60):
         from datetime import timedelta
         self.hostname = hostname
         self.port = port
+        self.timeout = timeout
         assert type(self.info) is dict, \
             'Failed to retrive info from {}'.format(self.hostname)
         self._CACHE_ORANGE_API = (None, None)
@@ -103,7 +104,7 @@ class LiveboxPlayTv(object):
         get_params = {'operation': operation}
         if params:
             get_params.update(params)
-        r = requests.get(url, params=get_params)
+        r = requests.get(url, params=get_params, timeout=self.timeout)
         r.raise_for_status()
         return r.json()
 
@@ -286,7 +287,7 @@ class LiveboxPlayTv(object):
         url = 'http://{}:{}/remoteControl/cmd?operation=09&epg_id={}&uui=1'.format(
             self.hostname, self.port, epg_id_str
         )
-        r = requests.get(url)
+        r = requests.get(url, timeout=self.timeout)
         r.raise_for_status()
         return r.json()
 
