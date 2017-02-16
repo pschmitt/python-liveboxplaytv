@@ -19,6 +19,8 @@ class LiveboxPlayTv(object):
         from datetime import timedelta
         self.hostname = hostname
         self.port = port
+        assert type(self.info) is dict, \
+            'Failed to retrive info from {}'.format(self.hostname)
         self._CACHE_ORANGE_API = (None, None)
         self._CACHE_CHANNEL_IMG = {}
         self.refresh_frequency = timedelta(seconds=refresh_frequency)
