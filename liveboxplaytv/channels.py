@@ -2,8 +2,10 @@
 
 
 CHANNELS = [
+ {'epg_id': None, 'index': None, 'name': '6PLAY', 'wiki_page': '6play'},
  {'epg_id': None, 'index': '-1', 'name': 'N/A', 'wiki_page': None},
- {'epg_id': '0', 'index': '0', 'name': 'Mosaique', 'wiki_page': None},
+ {'epg_id': '0', 'index': '0', 'name': 'Mosaique',
+  'wiki_page': 'Orange (entreprise)'},
  {'epg_id': '192', 'index': '1', 'name': 'TF1', 'wiki_page': 'TF1'},
  {'epg_id': '4', 'index': '2', 'name': 'France 2', 'wiki_page': 'France 2'},
  {'epg_id': '80', 'index': '3', 'name': 'France 3', 'wiki_page': 'France 3'},

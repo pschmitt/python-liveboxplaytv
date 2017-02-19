@@ -116,13 +116,17 @@ class LiveboxPlayTv(object):
 
     def turn_on(self):
         if not self.standby_state:
-            self.press_key(key=KEYS['POWER'])
+            power_press = self.press_key(key=KEYS['POWER'])
+            logger.debug(power_press)
             time.sleep(.8)
-            self.press_key(key=KEYS['OK'])
+            ok_press = self.press_key(key=KEYS['OK'])
+            logger.debug(ok_press)
 
     def turn_off(self):
         if self.standby_state:
-            return self.press_key(key=KEYS['POWER'])
+            power_press = self.press_key(key=KEYS['POWER'])
+            logger.debug(power_press)
+            return power_press
 
     def get_program_for_epg_id(self, epg_id):
         res = [p for p in self.get_programs() if p['channelId'] == epg_id]
@@ -157,6 +161,8 @@ class LiveboxPlayTv(object):
                 return 'VOD'
             elif osd == 'AdvPlayer':
                 return 'Replay'
+            elif osd == '6PLAY':
+                return '6PLAY'
         return channel_name
 
     def get_current_channel_image(self, img_size=300):
