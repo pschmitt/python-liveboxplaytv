@@ -4,6 +4,7 @@
 
 from .channels import CHANNELS
 from .keys import KEYS
+from collections import OrderedDict
 from fuzzywuzzy import process
 import json
 import logging
@@ -101,9 +102,10 @@ class LiveboxPlayTv(object):
 
     def rq(self, operation, params=None):
         url = 'http://{}:{}/remoteControl/cmd'.format(self.hostname, self.port)
-        get_params = {'operation': operation}
+        get_params = OrderedDict({'operation': operation})
         if params:
             get_params.update(params)
+        logger.debug('GET parameters: %s', get_params)
         r = requests.get(url, params=get_params, timeout=self.timeout)
         r.raise_for_status()
         return r.json()
@@ -311,7 +313,7 @@ class LiveboxPlayTv(object):
             assert key in KEYS, 'No such key: {}'.format(key)
             key = KEYS[key]
         logger.info('Press key {}'.format(self.__get_key_name(key)))
-        return self.rq('01', {'key': key, 'mode': mode})
+        return self.rq('01', OrderedDict([('key', key), ('mode', mode)]))
 
     def volume_up(self):
         return self.press_key(key=KEYS['VOL+'])
