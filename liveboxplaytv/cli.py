@@ -50,6 +50,7 @@ def parse_args():
 def main():
     args = parse_args()
     if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
         logger.setLevel(logging.DEBUG)
     output = ''
     l = LiveboxPlayTv(args.hostname)
