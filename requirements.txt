@@ -1,7 +1,7 @@
-appdirs==1.4.0
-fuzzywuzzy==0.14.0
+appdirs==1.4.3
+fuzzywuzzy==0.15.0
 packaging==16.8
-pyparsing==2.1.10
+pyparsing==2.2.0
 python-Levenshtein==0.12.0
-requests==2.13.0
+requests==2.17.3
 six==1.10.0
