@@ -3,5 +3,5 @@ fuzzywuzzy==0.15.1
 packaging==16.8
 pyparsing==2.2.0
 python-Levenshtein==0.12.0
-requests==2.18.3
+requests==2.18.4
 six==1.10.0
