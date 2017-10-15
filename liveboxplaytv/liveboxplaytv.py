@@ -2,17 +2,19 @@
 # coding: utf-8
 
 
-from .channels import CHANNELS
-from .keys import KEYS
 from collections import OrderedDict
-from fuzzywuzzy import process
 import json
 import logging
 import requests
 import time
 
+from fuzzywuzzy import process
 
-logger = logging.getLogger(__name__)
+from .channels import CHANNELS
+from .keys import KEYS
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class LiveboxPlayTv(object):
@@ -21,10 +23,10 @@ class LiveboxPlayTv(object):
         self.hostname = hostname
         self.port = port
         self.timeout = timeout
-        assert type(self.info) is dict, \
+        assert isinstance(self.info, dict), \
             'Failed to retrive info from {}'.format(self.hostname)
-        self._CACHE_ORANGE_API = (None, None)
-        self._CACHE_CHANNEL_IMG = {}
+        self._cache_orange_api = (None, None)
+        self._cache_channel_img = {}
         self.refresh_frequency = timedelta(seconds=refresh_frequency)
 
     @property
@@ -37,7 +39,7 @@ class LiveboxPlayTv(object):
 
     @property
     def channel_img(self):
-        return self.get_channel_image()
+        return self.get_current_channel_image()
 
     @channel.setter
     def channel(self, value):
@@ -105,10 +107,10 @@ class LiveboxPlayTv(object):
         get_params = OrderedDict({'operation': operation})
         if params:
             get_params.update(params)
-        logger.debug('GET parameters: %s', get_params)
-        r = requests.get(url, params=get_params, timeout=self.timeout)
-        r.raise_for_status()
-        return r.json()
+        _LOGGER.debug('GET parameters: %s', get_params)
+        resp = requests.get(url, params=get_params, timeout=self.timeout)
+        resp.raise_for_status()
+        return resp.json()
 
     def get_info(self):
         return self.rq(10)['result']['data']
@@ -176,71 +178,72 @@ class LiveboxPlayTv(object):
         wikipedia.set_lang('fr')
 
         if channel is None:
-            logger.error('Channel is not set. Could not retrieve image.')
+            _LOGGER.error('Channel is not set. Could not retrieve image.')
             return
 
         # Check if the image is in cache
-        if channel in self._CACHE_CHANNEL_IMG and not skip_cache:
-            img = self._CACHE_CHANNEL_IMG[channel]
-            logger.debug('Cache hit: {} -> {}'.format(channel, img))
+        if channel in self._cache_channel_img and not skip_cache:
+            img = self._cache_channel_img[channel]
+            _LOGGER.debug('Cache hit: %s -> %s', channel, img)
             return img
 
         channel_info = self.get_channel_info(channel)
         query = channel_info['wiki_page']
         if not query:
-            logger.debug('Wiki page is not set for channel {}'.format(channel))
+            _LOGGER.debug('Wiki page is not set for channel %s', channel)
             return
-        logger.debug('Query: {}'.format(query))
+        _LOGGER.debug('Query: %s', query)
         # If there is a max image size defined use it.
         if 'max_img_size' in channel_info:
             if img_size > channel_info['max_img_size']:
-                logger.info(
+                _LOGGER.info(
                     'Requested image size is bigger than the max, '
-                    'setting it to {}'.format(channel_info['max_img_size'])
+                    'setting it to %s', channel_info['max_img_size']
                 )
                 img_size = channel_info['max_img_size']
         try:
-            p = wikipedia.page(query)
-            logger.debug('Wikipedia article title: {}'.format(p.title))
-            s = BeautifulSoup(p.html(), 'html.parser')
-            images = s.find_all('img')
+            page = wikipedia.page(query)
+            _LOGGER.debug('Wikipedia article title: %s', page.title)
+            soup = BeautifulSoup(page.html(), 'html.parser')
+            images = soup.find_all('img')
             img_src = None
             for i in images:
                 if i['alt'].startswith('Image illustrative'):
-                    img_src = re.sub('\d+px', '{}px'.format(img_size), i['src'])
+                    img_src = re.sub(r'\d+px', '{}px'.format(img_size),
+                                     i['src'])
             img = 'https:{}'.format(img_src) if img_src else None
             # Cache result
-            self._CACHE_CHANNEL_IMG[channel] = img
+            self._cache_channel_img[channel] = img
             return img
         except PageError:
-            logger.error('Could not fetch channel image for {}'.format(channel))
+            _LOGGER.error('Could not fetch channel image for %s', channel)
 
     def get_channels(self):
         return CHANNELS
 
     def __update(self):
-        logger.info('Refresh Orange API data')
+        _LOGGER.info('Refresh Orange API data')
         url = 'http://lsm-rendezvous040413.orange.fr/API/?output=json&withChannels=1'
-        r = requests.get(url)
-        r.raise_for_status()
-        return r.json()
+        resp = requests.get(url)
+        resp.raise_for_status()
+        return resp.json()
 
     def query_orange_api(self, force=False):
         # Return cached results if available
         from datetime import datetime
         now = datetime.now()
         last_updated = None
-        if len(self._CACHE_ORANGE_API) > 0:
-            last_updated = self._CACHE_ORANGE_API[0]
+        if self._cache_orange_api:
+            last_updated = self._cache_orange_api[0]
         if last_updated:
             if force or last_updated < (now - self.refresh_frequency):
                 # Time to refresh the data
-                self._CACHE_ORANGE_API = (now, self.__update())
+                self._cache_orange_api = (now, self.__update())
         elif force or not last_updated:
-                # First update
-                self._CACHE_ORANGE_API = (now, self.__update())
-        if len(self._CACHE_ORANGE_API) > 1:
-            return self._CACHE_ORANGE_API[1]
+            # First update
+            self._cache_orange_api = (now, self.__update())
+        if len(self._cache_orange_api) > 1:
+            return self._cache_orange_api[1]
 
     def get_channels_from_orange(self):
         return self.query_orange_api()['channels']['channel']
@@ -258,40 +261,38 @@ class LiveboxPlayTv(object):
         if channel.startswith('#'):
             channel_index = channel.split('#')[1]
         # Look for an exact match first
-        for c in CHANNELS:
+        for chan in CHANNELS:
             if channel_index:
-                if c['index'] == channel_index:
-                    return c
+                if chan['index'] == channel_index:
+                    return chan
             else:
-                if c['name'].lower() == channel.lower():
-                    return c
+                if chan['name'].lower() == channel.lower():
+                    return chan
         # Try fuzzy matching it that did not give any result
-        c = process.extractOne(channel, CHANNELS)[0]
-        return c
+        chan = process.extractOne(channel, CHANNELS)[0]
+        return chan
 
     def get_channel_epg_id(self, channel):
         return self.get_channel_info(channel)['epg_id']
 
     def get_channel_from_epg_id(self, epg_id):
         res = [c for c in CHANNELS if c['epg_id'] == epg_id]
-        return res[0] if len(res) > 0 else None
+        return res[0] if res else None
 
     def set_epg_id(self, epg_id):
         # The EPG ID needs to be 10 chars long, padded with '*' chars
         epg_id_str = str(epg_id).rjust(10, '*')
-        logger.info('Tune to {}'.format(
-            self.get_channel_from_epg_id(epg_id)['name']
-        ))
-        logger.debug('EPG ID string: {}'.format(epg_id_str))
+        _LOGGER.info('Tune to %s',
+                     self.get_channel_from_epg_id(epg_id)['name'])
+        _LOGGER.debug('EPG ID string: %s', epg_id_str)
         # FIXME We cannot use rq here since requests automatically urlencodes
         # the '*' characters
         # return self.rq('09', {'epg_id': epg_id_str, 'uui': 1})
-        url = 'http://{}:{}/remoteControl/cmd?operation=09&epg_id={}&uui=1'.format(
-            self.hostname, self.port, epg_id_str
-        )
-        r = requests.get(url, timeout=self.timeout)
-        r.raise_for_status()
-        return r.json()
+        url = 'http://{}:{}/remoteControl/cmd?operation=09&epg_id={}&uui=1'.\
+            format(self.hostname, self.port, epg_id_str)
+        resp = requests.get(url, timeout=self.timeout)
+        resp.raise_for_status()
+        return resp.json()
 
     def set_channel(self, channel):
         epg_id = self.get_channel_epg_id(channel)
@@ -309,10 +310,10 @@ class LiveboxPlayTv(object):
             1 -> long press
             2 -> release after long press
         '''
-        if type(key) is str:
+        if isinstance(key, str):
             assert key in KEYS, 'No such key: {}'.format(key)
             key = KEYS[key]
-        logger.info('Press key {}'.format(self.__get_key_name(key)))
+        _LOGGER.info('Press key %s', self.__get_key_name(key))
         return self.rq('01', OrderedDict([('key', key), ('mode', mode)]))
 
     def volume_up(self):
@@ -336,16 +337,17 @@ class LiveboxPlayTv(object):
     def play(self):
         if self.media_state == 'PAUSE':
             return self.play_pause()
-        logger.debug('Media is already playing.')
+        _LOGGER.debug('Media is already playing.')
 
     def pause(self):
         if self.media_state == 'PLAY':
             return self.play_pause()
-        logger.debug('Media is already paused.')
+        _LOGGER.debug('Media is already paused.')
 
     def event_notify(self):
         # https://www.domotique-fibaro.fr/topic/4444-tv-commande-decodeur-livebox-play-et-gestion-d%C3%A3%C2%A9tat-temps-r%C3%A3%C2%A9el/
-        url = 'http://{}:{}/remoteControl/notifyEvent'.format(self.hostname, self.port)
-        r = requests.get(url)
-        r.raise_for_status()
-        return r.json()
+        url = 'http://{}:{}/remoteControl/notifyEvent'.format(self.hostname,
+                                                              self.port)
+        resp = requests.get(url)
+        resp.raise_for_status()
+        return resp.json()

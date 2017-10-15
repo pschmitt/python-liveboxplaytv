@@ -3,4 +3,4 @@ from __future__ import absolute_import
 from .channels import CHANNELS
 from .keys import KEYS
 from .liveboxplaytv import LiveboxPlayTv
-from .liveboxplaytv import logger
+from .liveboxplaytv import _LOGGER
