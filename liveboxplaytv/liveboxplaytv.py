@@ -58,6 +58,10 @@ class LiveboxPlayTv(object):
         return self.get_current_program_name()
 
     @property
+    def program_img(self):
+        return self.get_current_program_image()
+
+    @property
     def osd_context(self):
         return self.info.get('osdContext', None)
 
