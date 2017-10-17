@@ -141,10 +141,11 @@ class LiveboxPlayTv(object):
         if res:
             return res.get('name')
 
-    def get_current_program_image(self):
+    def get_current_program_image(self, img_size=300):
+        from pyteleloisirs import resize_program_image
         res = self.get_current_program()
         if res:
-            return res.get('img')
+            return resize_program_image(res.get('img'), img_size)
 
     def get_current_channel(self):
         epg_id = self.info.get('playedMediaId', None)
