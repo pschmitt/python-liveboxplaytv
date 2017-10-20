@@ -134,7 +134,8 @@ class LiveboxPlayTv(object):
 
     def get_current_program(self):
         from pyteleloisirs import get_current_program
-        return get_current_program(self.channel)
+        if self.channel and self.channel != 'N/A':
+            return get_current_program(self.channel)
 
     def get_current_program_name(self):
         res = self.get_current_program()
