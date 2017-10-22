@@ -25,7 +25,6 @@ class LiveboxPlayTv(object):
         self.timeout = timeout
         assert isinstance(self.info, dict), \
             'Failed to retrive info from {}'.format(self.hostname)
-        self._cache_orange_api = (None, None)
         self._cache_channel_img = {}
         self.refresh_frequency = timedelta(seconds=refresh_frequency)
 
