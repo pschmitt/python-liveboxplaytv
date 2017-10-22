@@ -132,19 +132,19 @@ class LiveboxPlayTv(object):
         if self.standby_state:
             return self.press_key(key=KEYS['POWER'])
 
-    def get_current_program(self):
-        from pyteleloisirs import get_current_program
+    async def async_get_current_program(self):
+        from pyteleloisirs import async_get_current_program as async_get_cprg
         if self.channel and self.channel != 'N/A':
-            return get_current_program(self.channel)
+            return await async_get_cprg(self.channel)
 
-    def get_current_program_name(self):
-        res = self.get_current_program()
+    async def async_get_current_program_name(self):
+        res = await self.async_get_current_program()
         if res:
             return res.get('name')
 
-    def get_current_program_image(self, img_size=300):
+    async def async_get_current_program_image(self, img_size=300):
         from pyteleloisirs import resize_program_image
-        res = self.get_current_program()
+        res = await self.async_get_current_program()
         if res:
             return resize_program_image(res.get('img'), img_size)
 
@@ -177,9 +177,9 @@ class LiveboxPlayTv(object):
     def get_channel_image(self, channel, img_size=300, skip_cache=False):
         """Get the logo for a channel"""
         from bs4 import BeautifulSoup
+        from wikipedia.exceptions import PageError
         import re
         import wikipedia
-        from wikipedia.exceptions import PageError
         wikipedia.set_lang('fr')
 
         if channel is None:
