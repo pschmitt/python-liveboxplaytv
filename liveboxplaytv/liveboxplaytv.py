@@ -30,7 +30,7 @@ class LiveboxPlayTv(object):
 
     @property
     def standby_state(self):
-        return self.info.get('activeStandbyState', None) == '0'
+        return self.info.get('activeStandbyState') == '0'
 
     @property
     def channel(self):
@@ -46,7 +46,7 @@ class LiveboxPlayTv(object):
 
     @property
     def epg_id(self):
-        return self.info.get('playedMediaId', None)
+        return self.info.get('playedMediaId')
 
     @epg_id.setter
     def epg_id(self, value):
@@ -62,35 +62,35 @@ class LiveboxPlayTv(object):
 
     @property
     def osd_context(self):
-        return self.info.get('osdContext', None)
+        return self.info.get('osdContext')
 
     @property
     def media_state(self):
-        return self.info.get('playedMediaState', None)
+        return self.info.get('playedMediaState')
 
     @property
     def media_position(self):
-        return self.info.get('playedMediaPosition', None)
+        return self.info.get('playedMediaPosition')
 
     @property
     def media_type(self):
-        return self.info.get('playedMediaType', None)
+        return self.info.get('playedMediaType')
 
     @property
     def timeshift_state(self):
-        return self.info.get('timeShiftingState', None)
+        return self.info.get('timeShiftingState')
 
     @property
     def mac_address(self):
-        return self.info.get('macAddress', None)
+        return self.info.get('macAddress')
 
     @property
     def name(self):
-        return self.info.get('friendlyName', None)
+        return self.info.get('friendlyName')
 
     @property
     def wol_support(self):
-        return self.info.get('wolSupport', None) == '0'
+        return self.info.get('wolSupport') == '0'
 
     @property
     def is_on(self):
@@ -148,7 +148,7 @@ class LiveboxPlayTv(object):
             return resize_program_image(res.get('img'), img_size)
 
     def get_current_channel(self):
-        epg_id = self.info.get('playedMediaId', None)
+        epg_id = self.info.get('playedMediaId')
         return self.get_channel_from_epg_id(epg_id)
 
     def get_current_channel_name(self):
@@ -181,7 +181,7 @@ class LiveboxPlayTv(object):
         import wikipedia
         wikipedia.set_lang('fr')
 
-        if channel is None:
+        if not channel:
             _LOGGER.error('Channel is not set. Could not retrieve image.')
             return
 
