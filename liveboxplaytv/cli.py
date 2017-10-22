@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from liveboxplaytv import (LiveboxPlayTv, logger)
+import asyncio
 import logging
 import argparse
+
+
+from liveboxplaytv import LiveboxPlayTv
 
 
 def parse_args():
@@ -33,6 +36,8 @@ def parse_args():
     vol_parser = subparsers.add_parser('vol', help='Volume Control')
     vol_parser.add_argument('volume_action', choices=['up', 'down', 'mute'])
     subparsers.add_parser('info', help='Get info')
+    subparsers.add_parser('program', help='Get current program')
+    subparsers.add_parser('channel', help='Get current channel')
     subparsers.add_parser('state', help='Get the current state (on or off)')
     subparsers.add_parser('on', help='Turn the Livebox Play appliance on')
     subparsers.add_parser('off', help='Turn the Livebox Play appliance off')
@@ -51,7 +56,6 @@ def main():
     args = parse_args()
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
-        logger.setLevel(logging.DEBUG)
     output = ''
     l = LiveboxPlayTv(args.hostname)
 
@@ -84,6 +88,12 @@ def main():
         output = l.event_notify()
     elif args.action == 'op':
         output = l.rq(args.OPERATION)
+    elif args.action == 'channel':
+        output = l.channel
+    elif args.action == 'program':
+        loop = asyncio.get_event_loop()
+        output = loop.run_until_complete(l.async_get_current_program_name())
+        loop.close()
 
     if output:
         if args.json:
