@@ -3,6 +3,7 @@
 
 
 from collections import OrderedDict
+import asyncio
 import json
 import logging
 import requests
@@ -131,19 +132,22 @@ class LiveboxPlayTv(object):
         if self.standby_state:
             return self.press_key(key=KEYS['POWER'])
 
-    async def async_get_current_program(self):
+    @asyncio.coroutine
+    def async_get_current_program(self):
         from pyteleloisirs import async_get_current_program as async_get_cprg
         if self.channel and self.channel != 'N/A':
-            return await async_get_cprg(self.channel)
+            return (yield from async_get_cprg(self.channel))
 
-    async def async_get_current_program_name(self):
-        res = await self.async_get_current_program()
+    @asyncio.coroutine
+    def async_get_current_program_name(self):
+        res = yield from self.async_get_current_program()
         if res:
             return res.get('name')
 
-    async def async_get_current_program_image(self, img_size=300):
+    @asyncio.coroutine
+    def async_get_current_program_image(self, img_size=300):
         from pyteleloisirs import resize_program_image
-        res = await self.async_get_current_program()
+        res = yield from self.async_get_current_program()
         if res:
             return resize_program_image(res.get('img'), img_size)
 
