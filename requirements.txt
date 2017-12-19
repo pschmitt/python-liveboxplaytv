@@ -3,7 +3,7 @@ beautifulsoup4==4.6.0
 bs4==0.0.1
 certifi==2017.11.5
 chardet==3.0.4
-fuzzywuzzy==0.15.1
+fuzzywuzzy==0.16.0
 idna==2.6
 packaging==16.8
 pyparsing==2.2.0
