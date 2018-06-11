@@ -4,7 +4,7 @@ bs4==0.0.1
 certifi==2018.4.16
 chardet==3.0.4
 fuzzywuzzy==0.16.0
-idna==2.6
+idna==2.7
 packaging==17.1
 pyparsing==2.2.0
 python-Levenshtein==0.12.0
