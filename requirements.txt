@@ -6,7 +6,7 @@ chardet==3.0.4
 fuzzywuzzy==0.17.0
 idna==2.7
 packaging==17.1
-pyparsing==2.2.0
+pyparsing==2.2.1
 python-Levenshtein==0.12.0
 requests==2.19.1
 six==1.11.0
