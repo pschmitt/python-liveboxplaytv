@@ -1,7 +1,7 @@
 appdirs==1.4.3
 beautifulsoup4==4.6.3
 bs4==0.0.1
-certifi==2018.10.15
+certifi==2018.11.29
 chardet==3.0.4
 fuzzywuzzy==0.17.0
 idna==2.7
