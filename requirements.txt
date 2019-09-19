@@ -5,7 +5,7 @@ certifi==2019.6.16
 chardet==3.0.4
 fuzzywuzzy==0.17.0
 idna==2.8
-packaging==19.0
+packaging==19.2
 pyparsing==2.4.2
 python-Levenshtein==0.12.0
 requests==2.22.0
