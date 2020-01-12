@@ -9,7 +9,7 @@ certifi==2019.11.28
 chardet==3.0.4
 fuzzywuzzy==0.17.0
 idna==2.8
-multidict==4.7.3
+multidict==4.7.4
 pyparsing==2.4.5
 pyteleloisirs==3.6
 python-levenshtein==0.12.0
