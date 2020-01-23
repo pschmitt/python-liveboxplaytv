@@ -16,6 +16,6 @@ python-levenshtein==0.12.0
 requests==2.22.0
 six==1.14.0
 soupsieve==1.9.5
-urllib3==1.25.7
+urllib3==1.25.8
 wikipedia==1.4.0
 yarl==1.4.2
