@@ -1,21 +1,21 @@
--i https://pypi.org/simple
+-i https://pypi.org/simple/
 aiohttp==3.6.2
-appdirs==1.4.4
+appdirs==1.4.3
 async-timeout==3.0.1
 attrs==19.3.0
 beautifulsoup4==4.9.1
 bs4==0.0.1
-certifi==2020.4.5.2
+certifi==2019.11.28
 chardet==3.0.4
-fuzzywuzzy==0.18.0
-idna==2.9
+fuzzywuzzy==0.17.0
+idna==2.8
 multidict==4.7.6
-pyparsing==2.4.7
+pyparsing==2.4.5
 pyteleloisirs==3.6
 python-levenshtein==0.12.0
-requests==2.23.0
-six==1.15.0
+requests==2.22.0
+six==1.13.0
 soupsieve==2.0.1
-urllib3==1.25.9
+urllib3==1.25.7
 wikipedia==1.4.0
 yarl==1.4.2
