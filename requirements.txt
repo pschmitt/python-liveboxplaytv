@@ -13,7 +13,7 @@ multidict==5.0.0
 pyparsing==2.4.7
 pyteleloisirs==3.6
 python-levenshtein==0.12.0
-requests==2.24.0
+requests==2.25.0
 six==1.15.0
 soupsieve==2.0.1 ; python_version >= '3.0'
 typing-extensions==3.7.4.3
