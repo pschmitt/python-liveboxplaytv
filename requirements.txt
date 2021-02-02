@@ -12,7 +12,7 @@ idna==2.10
 multidict==5.1.0
 pyparsing==2.4.7
 pyteleloisirs==3.6
-python-levenshtein==0.12.1
+python-levenshtein==0.12.2
 requests==2.25.1
 six==1.15.0
 soupsieve==2.1 ; python_version >= '3.0'
