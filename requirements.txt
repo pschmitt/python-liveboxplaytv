@@ -15,7 +15,7 @@ beautifulsoup4==4.10.0
 bs4==0.0.1
 certifi==2021.10.8
 chardet==4.0.0
-charset-normalizer==2.0.9; python_version >= '3'
+charset-normalizer==2.0.10; python_version >= '3'
 frozenlist==1.2.0; python_version >= '3.6'
 fuzzywuzzy==0.18.0
 idna==3.3
@@ -23,7 +23,7 @@ multidict==5.2.0; python_version >= '3.6'
 pyparsing==3.0.6
 pyteleloisirs==3.6
 python-levenshtein==0.12.2
-requests==2.27.0
+requests==2.27.1
 setuptools==60.2.0; python_version >= '3.7'
 six==1.16.0
 soupsieve==2.3.1; python_version >= '3.6'
