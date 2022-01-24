@@ -16,11 +16,11 @@ bs4==0.0.1
 certifi==2021.10.8
 chardet==4.0.0
 charset-normalizer==2.0.10; python_version >= '3'
-frozenlist==1.2.0; python_version >= '3.6'
+frozenlist==1.3.0; python_version >= '3.7'
 fuzzywuzzy==0.18.0
 idna==3.3
-multidict==5.2.0; python_version >= '3.6'
-pyparsing==3.0.6
+multidict==6.0.1; python_version >= '3.7'
+pyparsing==3.0.7
 pyteleloisirs==3.6
 python-levenshtein==0.12.2
 requests==2.27.1
